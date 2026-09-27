@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tansen87/easy-csv-plugins/schema/catalog.schema.json",
+  "title": "Easy CSV plugin catalog",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "plugins"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "plugins": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/plugin" }
+    }
+  },
+  "$defs": {
+    "plugin": {
+      "type": "object",
+      "required": ["name", "title", "description", "version", "assets"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Command name. Becomes the file name the app writes, so it is a security boundary.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "homepage": { "type": "string", "format": "uri" },
+        "license": { "type": "string" },
+        "required": { "type": "boolean", "default": false },
+        "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "versionArgs": {
+          "description": "Arguments that make the plugin print its version. Not uniform across upstreams.",
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "assets": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/platform" },
+          "additionalProperties": { "$ref": "#/$defs/asset" }
+        }
+      }
+    },
+    "platform": {
+      "description": "Must equal the app's PLATFORM_DIR value.",
+      "enum": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64",
+        "linux-x86_64-gnu",
+        "linux-aarch64-gnu"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "required": ["file", "size", "sha256", "urls"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "File name the app writes into the platform plugin directory.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,64}$"
+        },
+        "size": { "type": "integer", "minimum": 1 },
+        "sha256": {
+          "description": "Lowercase hex. Verified before the file is allowed to land.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "urls": {
+          "description": "Candidates, tried in order. Integrity does not depend on the host, because sha256 comes from this signed catalog.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^https://" }
+        }
+      }
+    }
+  }
+}

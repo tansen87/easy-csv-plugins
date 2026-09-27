@@ -1,0 +1,62 @@
+{
+  "name": "xan",
+  "title": "xan",
+  "description": "CSV processing engine used by every non-plugin command",
+  "homepage": "https://github.com/medialab/xan",
+  "license": "MIT",
+  "required": true,
+  "version": "0.61.0",
+  "versionArgs": ["--version"],
+  "assets": {
+    "windows-x86_64": {
+      "file": "xan.exe",
+      "upstream": {
+        "kind": "github",
+        "repo": "medialab/xan",
+        "tag": "0.61.0",
+        "asset": "xan-x86_64-pc-windows-msvc.zip",
+        "member": "xan.exe"
+      }
+    },
+    "macos-aarch64": {
+      "file": "xan",
+      "upstream": {
+        "kind": "github",
+        "repo": "medialab/xan",
+        "tag": "0.61.0",
+        "asset": "xan-aarch64-apple-darwin.tar.gz",
+        "member": "xan"
+      }
+    },
+    "macos-x86_64": {
+      "file": "xan",
+      "upstream": {
+        "kind": "github",
+        "repo": "medialab/xan",
+        "tag": "0.61.0",
+        "asset": "xan-x86_64-apple-darwin.tar.gz",
+        "member": "xan"
+      }
+    },
+    "linux-x86_64-gnu": {
+      "file": "xan",
+      "upstream": {
+        "kind": "github",
+        "repo": "medialab/xan",
+        "tag": "0.61.0",
+        "asset": "xan-x86_64-unknown-linux-gnu.tar.gz",
+        "member": "xan"
+      }
+    },
+    "linux-aarch64-gnu": {
+      "file": "xan",
+      "upstream": {
+        "kind": "github",
+        "repo": "medialab/xan",
+        "tag": "0.61.0",
+        "asset": "xan-aarch64-unknown-linux-gnu.tar.gz",
+        "member": "xan"
+      }
+    }
+  }
+}

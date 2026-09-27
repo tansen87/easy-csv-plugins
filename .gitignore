@@ -1,0 +1,12 @@
+# Build/staging output — binaries are release assets, never committed.
+dist/
+node_modules/
+
+# Locally built test catalogs (see README "本地联调").
+catalog.local.json
+catalog.local.json.sig
+
+# Signing keys must never land here; they live outside the repo
+# (~/.tauri/easycsv-plugins.key), same rule as the app's updater key.
+*.key
+*.key.pub

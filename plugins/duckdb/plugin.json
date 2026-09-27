@@ -1,0 +1,62 @@
+{
+  "name": "duckdb",
+  "title": "DuckDB",
+  "description": "Run a SQL query over the data with the DuckDB CLI",
+  "homepage": "https://duckdb.org",
+  "license": "MIT",
+  "required": false,
+  "version": "1.5.5",
+  "versionArgs": ["-version"],
+  "assets": {
+    "windows-x86_64": {
+      "file": "duckdb.exe",
+      "upstream": {
+        "kind": "github",
+        "repo": "duckdb/duckdb",
+        "tag": "v1.5.5",
+        "asset": "duckdb_cli-windows-amd64.zip",
+        "member": "duckdb.exe"
+      }
+    },
+    "macos-aarch64": {
+      "file": "duckdb",
+      "upstream": {
+        "kind": "github",
+        "repo": "duckdb/duckdb",
+        "tag": "v1.5.5",
+        "asset": "duckdb_cli-osx-universal.zip",
+        "member": "duckdb"
+      }
+    },
+    "macos-x86_64": {
+      "file": "duckdb",
+      "upstream": {
+        "kind": "github",
+        "repo": "duckdb/duckdb",
+        "tag": "v1.5.5",
+        "asset": "duckdb_cli-osx-universal.zip",
+        "member": "duckdb"
+      }
+    },
+    "linux-x86_64-gnu": {
+      "file": "duckdb",
+      "upstream": {
+        "kind": "github",
+        "repo": "duckdb/duckdb",
+        "tag": "v1.5.5",
+        "asset": "duckdb_cli-linux-amd64.zip",
+        "member": "duckdb"
+      }
+    },
+    "linux-aarch64-gnu": {
+      "file": "duckdb",
+      "upstream": {
+        "kind": "github",
+        "repo": "duckdb/duckdb",
+        "tag": "v1.5.5",
+        "asset": "duckdb_cli-linux-arm64.zip",
+        "member": "duckdb"
+      }
+    }
+  }
+}

@@ -1,0 +1,210 @@
+name: release
+
+# Stages plugin binaries for all five platforms, builds and signs the catalog,
+# then publishes:
+#   - <name>-v<version>   one release per plugin, holding the raw binaries
+#   - catalog-<date>      the catalog + signature, created with --latest so
+#                         /releases/latest/download/catalog.json resolves to it
+#
+# Plugin releases must exist before the catalog release: the catalog pins their
+# asset URLs.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["catalog-*"]
+
+permissions:
+  contents: write
+
+jobs:
+  stage:
+    name: stage ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, platform: linux-x86_64-gnu, target: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, platform: linux-aarch64-gnu, target: aarch64-unknown-linux-gnu }
+          - { os: macos-14, platform: macos-aarch64, target: aarch64-apple-darwin }
+          - { os: macos-14, platform: macos-x86_64, target: x86_64-apple-darwin }
+          - { os: windows-latest, platform: windows-x86_64, target: x86_64-pc-windows-msvc }
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # --- upstream binaries (xan, duckdb) -----------------------------------
+      - name: Fetch upstream assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          mkdir -p "dist/$PLATFORM"
+          tmp="$(mktemp -d)"
+          node scripts/stage.mjs --platform "$PLATFORM" > "$tmp/list.tsv"
+          while IFS=$'\t' read -r plugin repo tag asset member target; do
+            [ -z "${plugin:-}" ] && continue
+            echo "::group::$plugin <- $repo@$tag/$asset"
+            gh release download "$tag" --repo "$repo" --pattern "$asset" --dir "$tmp/dl" --clobber
+            case "$asset" in
+              *.zip) unzip -o -q "$tmp/dl/$asset" "$member" -d "$tmp/out" ;;
+              *.tar.gz | *.tgz) tar -xzf "$tmp/dl/$asset" -C "$tmp/out" "$member" ;;
+              *) echo "unsupported archive: $asset" >&2; exit 1 ;;
+            esac
+            install -m 0755 "$tmp/out/$member" "dist/$PLATFORM/$target" 2>/dev/null \
+              || cp "$tmp/out/$member" "dist/$PLATFORM/$target"
+            echo "::endgroup::"
+          done < "$tmp/list.tsv"
+          ls -l "dist/$PLATFORM"
+
+      # --- pinyin, built from the app repository -----------------------------
+      - name: Build pinyin
+        if: contains(fromJSON('["pinyin"]'), 'pinyin')
+        shell: bash
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          TARGET: ${{ matrix.target }}
+          RUNNER: ${{ runner.os }}
+        run: |
+          set -euo pipefail
+          # Only the platforms whose plugin.json declares a cargo-built plugin
+          # need this; skip cleanly when the plugin does not exist yet.
+          node -e '
+            const fs=require("fs");
+            const p=JSON.parse(fs.readFileSync("plugins/pinyin/plugin.json","utf8"));
+            process.exit(p.assets[process.env.PLATFORM]?.upstream?.kind === "cargo" ? 0 : 1);
+          ' || { echo "no cargo-built plugin for $PLATFORM"; exit 0; }
+
+          if [ "$RUNNER" = "Linux" ] && [ "$TARGET" = "aarch64-unknown-linux-gnu" ]; then
+            sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
+            echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
+          fi
+          rustup target add "$TARGET"
+
+          git clone --depth 1 https://github.com/tansen87/easy-csv "$RUNNER_TEMP/easy-csv"
+          cargo build --release --locked \
+            --manifest-path "$RUNNER_TEMP/easy-csv/plugins/pinyin-cli/Cargo.toml" \
+            --target "$TARGET"
+
+          suffix=""
+          [ "$PLATFORM" = "windows-x86_64" ] && suffix=".exe"
+          mkdir -p "dist/$PLATFORM"
+          install -m 0755 "$RUNNER_TEMP/easy-csv/plugins/pinyin-cli/target/$TARGET/release/pinyin$suffix" \
+            "dist/$PLATFORM/pinyin$suffix" 2>/dev/null \
+            || cp "$RUNNER_TEMP/easy-csv/plugins/pinyin-cli/target/$TARGET/release/pinyin$suffix" \
+                  "dist/$PLATFORM/pinyin$suffix"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}
+          path: dist/${{ matrix.platform }}
+          if-no-files-found: error
+
+  publish:
+    name: build + sign + publish
+    needs: [stage]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Assemble dist/
+        shell: bash
+        run: |
+          set -euo pipefail
+          for dir in artifacts/dist-*; do
+            platform="${dir#artifacts/dist-}"
+            mkdir -p "dist/$platform"
+            cp -a "$dir/." "dist/$platform/"
+          done
+          find dist -type f -printf '%p  %s\n' | sort
+
+      # A missing binary must fail here, not silently ship a catalog that can
+      # only serve some platforms.
+      - name: Build catalog
+        shell: bash
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/build-catalog.mjs --require-all
+
+      - name: Validate against the schema
+        run: npx --yes ajv-cli@5 validate -s schema/catalog.schema.json -d catalog.json --spec=draft2020
+
+      - name: Sign catalog
+        shell: bash
+        env:
+          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.PLUGIN_SIGNING_KEY_PASSWORD }}
+          TAURI_CLI: npx
+        run: |
+          set -euo pipefail
+          npm install --no-save @tauri-apps/cli@^2
+          key="$RUNNER_TEMP/easycsv-plugins.key"
+          printf '%s' "$PLUGIN_SIGNING_KEY" > "$key"
+          node scripts/sign-catalog.mjs --private-key-path "$key"
+          rm -f "$key"
+
+      # Plugin releases first: the catalog points at their asset URLs.
+      - name: Publish plugin releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const c = require("./catalog.json");
+            for (const p of c.plugins) {
+              const platforms = Object.keys(p.assets);
+              console.log([p.name, p.version, platforms[0]].join("\t"));
+            }
+          ' > /tmp/plugins.tsv
+          while IFS=$'\t' read -r name version firstPlatform; do
+            tag="$name-v$version"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "$tag already published — uploading any missing assets"
+            else
+              gh release create "$tag" --title "$name $version" --notes "$name $version"
+            fi
+            # One file per platform, named exactly as the catalog says.
+            for file in $(node -e '
+              const c = require("./catalog.json");
+              const p = c.plugins.find((x) => x.name === process.argv[1]);
+              console.log(Object.values(p.assets).map((a) => a.file).join(" "));
+            ' "$name"); do
+              src=$(find dist -name "$file" -type f | head -1)
+              [ -n "$src" ] || { echo "missing staged $file" >&2; exit 1; }
+              cp "$src" "/tmp/$name-$version-$(basename "$(dirname "$src")")$( [ "${file##*.}" = "exe" ] && echo .exe )"
+            done
+            gh release upload "$tag" /tmp/$name-$version-* --clobber
+          done < /tmp/plugins.tsv
+
+      # Created last, and with --latest, so the app's
+      # /releases/latest/download/ endpoint resolves to the catalog.
+      - name: Publish catalog release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="catalog-$(date -u +%Y.%m.%d)"
+          gh release create "$tag" --latest --title "catalog $tag" \
+            --notes "Signed plugin catalog. Fetch: /releases/latest/download/catalog.json" \
+            catalog.json catalog.json.sig 2>/dev/null \
+            || gh release upload "$tag" catalog.json catalog.json.sig --clobber
