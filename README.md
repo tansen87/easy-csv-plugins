@@ -56,14 +56,22 @@ invented:
 
 ## Signing
 
+> **先把密钥备份掉再谈别的**:见 [`KEY-MANAGEMENT.md`](KEY-MANAGEMENT.md) —— 它是这套链路里
+> 唯一不可重建的东西,文档里有备份清单、换设备步骤和轮换流程。
+
 The catalog is signed with a dedicated minisign key, **separate** from the app
 updater's key, so a compromise of this repository's CI cannot forge an
 application update.
 
 - Private key: `~/.tauri/easycsv-plugins.key` on the maintainer's machine;
   in CI it is the `PLUGIN_SIGNING_KEY` secret (contents of that file).
+  Losing the local file alone does **not** stop releases — CI can still sign —
+  but its value can never be read back out of a secret, so a real backup is the
+  only way to keep signing from a new machine.
 - Public key: committed by the app as `src-tauri/plugin-signing.pub`. It is what
   the app verifies against — treat it like the updater pubkey.
+  It may hold **several** keys, one base64 line each, so a rotation can be
+  shipped before it is needed.
 
 ```bash
 # sign locally (Tauri CLI writes the base64 form the app expects)
