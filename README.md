@@ -72,6 +72,9 @@ application update.
   the app verifies against — treat it like the updater pubkey.
   It may hold **several** keys, one base64 line each, so a rotation can be
   shipped before it is needed.
+- Where is the key, and is it the right one? `node scripts/key-status.mjs`,
+  and `node scripts/key-status.mjs --prove` to actually sign a probe and verify
+  it against this repository's public key.
 
 ```bash
 # sign locally (Tauri CLI writes the base64 form the app expects)

@@ -19,6 +19,30 @@
 | 谁验签 | 应用侧用 `minisign-verify` 验,公钥来自 `plugin-signing.pub` |
 | 和 app 更新器密钥的关系 | **完全独立**。更新器用的是 `~/.tauri/easycsv-updater.key` + `tauri.conf.json` 里的 `plugins.updater.pubkey`。两把钥匙分开是刻意的:插件仓库的 CI 因此**没有**伪造应用更新的能力 |
 
+### 放在哪
+
+默认就在 `~/.tauri/easycsv-plugins.key`(Tauri CLI 的约定位置,和更新器密钥同目录)。想换地方,
+用 `PLUGIN_SIGNING_KEY_PATH` 环境变量或 `--private-key-path` 指定,`sign-catalog.mjs` 与
+`key-status.mjs` 都认;CI 里用的是仓库 secret,不依赖这个路径。
+
+- ❌ **绝对不要放进应用的 `EasyCsv` 目录**(Windows/Linux 上那就是安装目录)。卸载器的
+  「删除应用数据」会**递归删掉整个文件夹** —— 一次再普通不过的卸载就能销毁唯一不可重建的东西。
+  而且那个目录会被更新覆盖、被用户整理、被整体打包分享。
+- ❌ 不要放进任何 git 仓库里(`.gitignore` 已挡 `*.key`,但别依赖它)。
+- ⚠️ 备份/恢复要**逐字节复制整个文件**:它本身是 base64 包裹的(解开后是
+  `untrusted comment: rsign encrypted secret key` + 又一层 base64),把解码后的文本粘回去会得到
+  一把**不可用**的钥匙 —— 而 `tauri signer` 只会报解不开,不会告诉你粘错了哪一层。
+
+### 找不到 / 拿不准手里这把对不对
+
+```bash
+node scripts/key-status.mjs          # 会用哪把、在不在、是不是那种格式
+node scripts/key-status.mjs --prove  # 签一个探针文件,再用仓库公钥验签 —— 唯一可靠的「是否配对」证明
+```
+
+`--prove` 用的是 app 将来验签的同一个 crate,所以它说 OK 就是真的 OK。**为什么不能靠比对文件判断**:
+私钥是 minisign **加密**过的 secret key(scrypt,即使无口令也加密),密钥 ID 在密文里读不出来。
+
 ## 2. 四个位置,能力不同(这是全文最重要的一张表)
 
 | 位置 | 现在有吗 | 能签名吗 | 能取回密钥**本身**吗 |
