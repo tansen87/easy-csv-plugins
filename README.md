@@ -97,7 +97,9 @@ python -m http.server 8099
 ```
 
 The app only permits `https` plus a loopback exception in debug builds, so this
-path is for development only.
+path is for development only. For the same reason the schema requires `https://`
+asset URLs: a locally built catalog is deliberately **not** schema-valid, and CI
+validates only the official one.
 
 ## Manual install (no network)
 

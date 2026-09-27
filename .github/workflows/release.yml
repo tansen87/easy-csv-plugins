@@ -65,9 +65,8 @@ jobs:
           done < "$tmp/list.tsv"
           ls -l "dist/$PLATFORM"
 
-      # --- pinyin, built from the app repository -----------------------------
+      # --- plugins built from the app repository (pinyin) --------------------
       - name: Build pinyin
-        if: contains(fromJSON('["pinyin"]'), 'pinyin')
         shell: bash
         env:
           PLATFORM: ${{ matrix.platform }}
