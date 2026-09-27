@@ -26,7 +26,13 @@ jobs:
       matrix:
         include:
           - { os: ubuntu-latest, platform: linux-x86_64-gnu, target: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, platform: linux-aarch64-gnu, target: aarch64-unknown-linux-gnu }
+          # arm64 is built on a native arm64 runner rather than cross-compiled.
+          # Cross-compiling it from x86_64 fails at link time: rustc's aarch64
+          # target spec adds the aarch64-only `--fix-cortex-a53-843419`, but the
+          # linker in use is the *host* rust-lld (newer Rust defaults to lld),
+          # which rejects it with "only supported on AArch64". Native runners are
+          # free for public repositories.
+          - { os: ubuntu-24.04-arm, platform: linux-aarch64-gnu, target: aarch64-unknown-linux-gnu }
           - { os: macos-14, platform: macos-aarch64, target: aarch64-apple-darwin }
           - { os: macos-14, platform: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, platform: windows-x86_64, target: x86_64-pc-windows-msvc }
@@ -71,21 +77,18 @@ jobs:
         env:
           PLATFORM: ${{ matrix.platform }}
           TARGET: ${{ matrix.target }}
-          RUNNER: ${{ runner.os }}
         run: |
           set -euo pipefail
-          # Only the platforms whose plugin.json declares a cargo-built plugin
-          # need this; skip cleanly when the plugin does not exist yet.
+          # Only platforms whose plugin.json declares a cargo-built plugin need
+          # this; a second such plugin would have to be checked here too.
           node -e '
             const fs=require("fs");
             const p=JSON.parse(fs.readFileSync("plugins/pinyin/plugin.json","utf8"));
             process.exit(p.assets[process.env.PLATFORM]?.upstream?.kind === "cargo" ? 0 : 1);
           ' || { echo "no cargo-built plugin for $PLATFORM"; exit 0; }
 
-          if [ "$RUNNER" = "Linux" ] && [ "$TARGET" = "aarch64-unknown-linux-gnu" ]; then
-            sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
-            echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
-          fi
+          # Every runner builds for its own architecture: no cross toolchain, no
+          # linker overrides, so nothing can disagree about which rust-lld to use.
           rustup target add "$TARGET"
 
           git clone --depth 1 https://github.com/tansen87/easy-csv "$RUNNER_TEMP/easy-csv"
@@ -160,7 +163,8 @@ jobs:
           node scripts/sign-catalog.mjs --private-key-path "$key"
           rm -f "$key"
 
-      # Plugin releases first: the catalog points at their asset URLs.
+      # Plugin releases first: the catalog pins their asset URLs, so each asset
+      # is uploaded under exactly the name the URL ends with.
       - name: Publish plugin releases
         shell: bash
         env:
@@ -168,31 +172,28 @@ jobs:
         run: |
           set -euo pipefail
           node -e '
-            const c = require("./catalog.json");
-            for (const p of c.plugins) {
-              const platforms = Object.keys(p.assets);
-              console.log([p.name, p.version, platforms[0]].join("\t"));
+            const catalog = require("./catalog.json");
+            for (const plugin of catalog.plugins) {
+              for (const [platform, asset] of Object.entries(plugin.assets)) {
+                const assetName = asset.urls[0].split("/").pop();
+                console.log(
+                  [plugin.name, plugin.version, platform, asset.file, assetName].join("\t"),
+                );
+              }
             }
-          ' > /tmp/plugins.tsv
-          while IFS=$'\t' read -r name version firstPlatform; do
+          ' > "$RUNNER_TEMP/assets.tsv"
+          cat "$RUNNER_TEMP/assets.tsv"
+
+          while IFS=$'\t' read -r name version platform file assetName; do
+            [ -z "${name:-}" ] && continue
             tag="$name-v$version"
-            if gh release view "$tag" >/dev/null 2>&1; then
-              echo "$tag already published — uploading any missing assets"
-            else
-              gh release create "$tag" --title "$name $version" --notes "$name $version"
-            fi
-            # One file per platform, named exactly as the catalog says.
-            for file in $(node -e '
-              const c = require("./catalog.json");
-              const p = c.plugins.find((x) => x.name === process.argv[1]);
-              console.log(Object.values(p.assets).map((a) => a.file).join(" "));
-            ' "$name"); do
-              src=$(find dist -name "$file" -type f | head -1)
-              [ -n "$src" ] || { echo "missing staged $file" >&2; exit 1; }
-              cp "$src" "/tmp/$name-$version-$(basename "$(dirname "$src")")$( [ "${file##*.}" = "exe" ] && echo .exe )"
-            done
-            gh release upload "$tag" /tmp/$name-$version-* --clobber
-          done < /tmp/plugins.tsv
+            gh release view "$tag" >/dev/null 2>&1 \
+              || gh release create "$tag" --title "$name $version" \
+                   --notes "Easy CSV plugin \`$name\` $version — installed by the app, see the repository README."
+            cp "dist/$platform/$file" "$RUNNER_TEMP/$assetName"
+            gh release upload "$tag" "$RUNNER_TEMP/$assetName" --clobber
+          done < "$RUNNER_TEMP/assets.tsv"
+          rm -f "$RUNNER_TEMP/assets.tsv"
 
       # Created last, and with --latest, so the app's
       # /releases/latest/download/ endpoint resolves to the catalog.

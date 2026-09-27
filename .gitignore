@@ -10,3 +10,11 @@ catalog.local.json.sig
 # (~/.tauri/easycsv-plugins.key), same rule as the app's updater key.
 *.key
 *.key.pub
+
+# Windows reserved device name: passing /dev/null to a Node script on Windows
+# resolves to a file called `nul` in the working directory.
+nul
+
+# Windows reserved device name: passing /dev/null to a Node script on Windows
+# resolves to a file called `nul` in the working directory.
+nul
