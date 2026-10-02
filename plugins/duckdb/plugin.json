@@ -5,7 +5,7 @@
   "homepage": "https://duckdb.org",
   "license": "MIT",
   "required": false,
-  "version": "1.5.5",
+  "version": "1.5.6",
   "versionArgs": ["-version"],
   "assets": {
     "windows-x86_64": {
@@ -13,7 +13,7 @@
       "upstream": {
         "kind": "github",
         "repo": "duckdb/duckdb",
-        "tag": "v1.5.5",
+        "tag": "v1.5.6",
         "asset": "duckdb_cli-windows-amd64.zip",
         "member": "duckdb.exe"
       }
@@ -23,7 +23,7 @@
       "upstream": {
         "kind": "github",
         "repo": "duckdb/duckdb",
-        "tag": "v1.5.5",
+        "tag": "v1.5.6",
         "asset": "duckdb_cli-osx-universal.zip",
         "member": "duckdb"
       }
@@ -33,7 +33,7 @@
       "upstream": {
         "kind": "github",
         "repo": "duckdb/duckdb",
-        "tag": "v1.5.5",
+        "tag": "v1.5.6",
         "asset": "duckdb_cli-osx-universal.zip",
         "member": "duckdb"
       }
@@ -43,7 +43,7 @@
       "upstream": {
         "kind": "github",
         "repo": "duckdb/duckdb",
-        "tag": "v1.5.5",
+        "tag": "v1.5.6",
         "asset": "duckdb_cli-linux-amd64.zip",
         "member": "duckdb"
       }
@@ -53,7 +53,7 @@
       "upstream": {
         "kind": "github",
         "repo": "duckdb/duckdb",
-        "tag": "v1.5.5",
+        "tag": "v1.5.6",
         "asset": "duckdb_cli-linux-arm64.zip",
         "member": "duckdb"
       }

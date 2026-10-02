@@ -18,13 +18,13 @@
   point at the same upstream asset but are staged as separate files, because the
   app resolves a different platform directory per architecture. The macOS CI job
   downloads it once and copies it twice.
-- The version tag carries a `v` prefix upstream (`v1.5.5`) while the catalog's
-  `version` does not (`1.5.5`) — the app compares semantically, but keep the
+- The version tag carries a `v` prefix upstream (`v1.5.6`) while the catalog's
+  `version` does not (`1.5.6`) — the app compares semantically, but keep the
   convention so the UI reads naturally.
 
 ## Version output
 
-`duckdb -version` prints `v1.5.5 (Variegata) d8cdaa33fd`, not a bare version.
+`duckdb -version` prints `v1.5.6 (Variegata) d8cdaa33fd`, not a bare version.
 The plugin line in Settings shows this raw string (the app only shells out for
 display); the catalog `version` is what update checks compare.
 
