@@ -15,6 +15,11 @@ catalog.local.json.sig
 # resolves to a file called `nul` in the working directory.
 nul
 
-# Windows reserved device name: passing /dev/null to a Node script on Windows
-# resolves to a file called `nul` in the working directory.
-nul
+# The published catalog + signature. The workflow deliberately commits them back
+# to main so the jsDelivr mirror (`@main/catalog.json`) has something to serve —
+# without that, the mirror is a guaranteed 404 and only lengthens every failure.
+# They are generated, so a local edit must never be picked up by hand.
+catalog.json
+catalog.json.sig
+
+.box-agent

@@ -208,3 +208,28 @@ jobs:
             --notes "Signed plugin catalog. Fetch: /releases/latest/download/catalog.json" \
             catalog.json catalog.json.sig 2>/dev/null \
             || gh release upload "$tag" catalog.json catalog.json.sig --clobber
+
+      # The mirror in the app points at `@main/catalog.json`, which resolves to a
+      # *repository file*, not to a release asset. Without this step that mirror
+      # is a guaranteed 404, and a fallback source that always fails only makes
+      # the wait longer — the exact trap design 022 documented for `endpoints`.
+      # The file is generated, so it is committed from here and ignored locally.
+      #
+      # A no-op run (same day, same catalog) must not create an empty commit.
+      - name: Publish catalog to main for the mirror
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp catalog.json catalog.json.sig "$RUNNER_TEMP/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f catalog.json catalog.json.sig
+          if git diff --cached --quiet; then
+            echo "catalog unchanged; nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: publish catalog $(date -u +%Y.%m.%d)"
+          # The job runs on whatever was pushed, which for a `catalog-*` tag is a
+          # detached HEAD. Pushing explicitly to main keeps the mirror honest even
+          # when the workflow was started by a tag.
+          git push origin HEAD:main
