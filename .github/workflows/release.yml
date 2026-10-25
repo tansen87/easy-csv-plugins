@@ -60,6 +60,8 @@ jobs:
             [ -z "${plugin:-}" ] && continue
             echo "::group::$plugin <- $repo@$tag/$asset"
             gh release download "$tag" --repo "$repo" --pattern "$asset" --dir "$tmp/dl" --clobber
+            # `unzip -d` creates its destination, `tar -C` does not — make it explicit.
+            mkdir -p "$tmp/out"
             case "$asset" in
               *.zip) unzip -o -q "$tmp/dl/$asset" "$member" -d "$tmp/out" ;;
               *.tar.gz | *.tgz) tar -xzf "$tmp/dl/$asset" -C "$tmp/out" "$member" ;;
