@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-25T13:04:42Z",
+  "generatedAt": "2026-11-21T07:37:28Z",
   "plugins": [
     {
       "name": "xan",
@@ -63,49 +63,49 @@
       "homepage": "https://duckdb.org",
       "license": "MIT",
       "required": false,
-      "version": "2.0.0",
+      "version": "2.0.1",
       "versionArgs": [
         "-version"
       ],
       "assets": {
         "windows-x86_64": {
           "file": "duckdb.exe",
-          "size": 62226216,
-          "sha256": "eceaa6b943fc868b26daf6e0fe96cc9d6d2ecf89f043df6c1bb5b2946e995d6e",
+          "size": 62862632,
+          "sha256": "b2b1e558a07c2a5978d01b52b1738b1573019b79b701e497a1a11631324cd924",
           "urls": [
-            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.0/duckdb-2.0.0-windows-x86_64.exe"
+            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.1/duckdb-2.0.1-windows-x86_64.exe"
           ]
         },
         "macos-aarch64": {
           "file": "duckdb",
-          "size": 66244528,
-          "sha256": "432e9c8012d0259e7c4630fa2136bf59fb832769ca7e0f6e374b8af2d2cebed9",
+          "size": 66039328,
+          "sha256": "509638bcbc80874928959b3e5841d2fc32f9cc0302eec5438b87fdeb3f82f7f3",
           "urls": [
-            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.0/duckdb-2.0.0-macos-aarch64"
+            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.1/duckdb-2.0.1-macos-aarch64"
           ]
         },
         "macos-x86_64": {
           "file": "duckdb",
-          "size": 68968432,
-          "sha256": "3abb2f746efe011979290d40448b8ac011b7fd7c55094ac00e7beeb8482c5ac0",
+          "size": 68885776,
+          "sha256": "53fe478459642df97f890a4a34422c5692f9ee1fe9b32e4a53513f7b01a128c4",
           "urls": [
-            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.0/duckdb-2.0.0-macos-x86_64"
+            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.1/duckdb-2.0.1-macos-x86_64"
           ]
         },
         "linux-x86_64-gnu": {
           "file": "duckdb",
-          "size": 77526584,
-          "sha256": "c41f957db5645d545a9caef430994cf262d24fad9297fef70c691395aadb43fb",
+          "size": 78117056,
+          "sha256": "47d96c334a04beb3b6b9d6571eb49b97af9f6ab2d4f96d4d8eb9a3f406962117",
           "urls": [
-            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.0/duckdb-2.0.0-linux-x86_64-gnu"
+            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.1/duckdb-2.0.1-linux-x86_64-gnu"
           ]
         },
         "linux-aarch64-gnu": {
           "file": "duckdb",
-          "size": 75289208,
-          "sha256": "f4c681bcf41a5c43dcf9a354703fe5bded9e2265282d1915d6d99637cd1e1f29",
+          "size": 75508568,
+          "sha256": "d889f0b27a8f601ec6a83b76806509de8269c0d9f07966cd6d9460ef07a07627",
           "urls": [
-            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.0/duckdb-2.0.0-linux-aarch64-gnu"
+            "https://github.com/tansen87/easy-csv-plugins/releases/download/duckdb-v2.0.1/duckdb-2.0.1-linux-aarch64-gnu"
           ]
         }
       }
@@ -124,40 +124,40 @@
       "assets": {
         "windows-x86_64": {
           "file": "pinyin.exe",
-          "size": 1265664,
-          "sha256": "adecb13e271ba58f1a4eae12e31826440a7ab987c845db16c269282f9968f10a",
+          "size": 1268224,
+          "sha256": "3bf9710f7a4e623f84a90e99d04c76809df4a890715e7520b9b5e02e5882a4c4",
           "urls": [
             "https://github.com/tansen87/easy-csv-plugins/releases/download/pinyin-v0.1.0/pinyin-0.1.0-windows-x86_64.exe"
           ]
         },
         "macos-aarch64": {
           "file": "pinyin",
-          "size": 1253232,
-          "sha256": "8f4bd16e2a07a625f200d5161711123e148e93ffb856b63579d113dbbf700d6b",
+          "size": 1253248,
+          "sha256": "216efdb0236a2cecfad8852ab1d1aaacb9b5780b0001f91099467639df38c433",
           "urls": [
             "https://github.com/tansen87/easy-csv-plugins/releases/download/pinyin-v0.1.0/pinyin-0.1.0-macos-aarch64"
           ]
         },
         "macos-x86_64": {
           "file": "pinyin",
-          "size": 1288464,
-          "sha256": "dd80aa3146af80f3af9320bf4bcd9a3c30aaf31f028de69bb70e9f7fb9de88c3",
+          "size": 1280360,
+          "sha256": "80bc82055591517c43003d0457efa03ac405d38187124d74e1159fe1f1c5ac0c",
           "urls": [
             "https://github.com/tansen87/easy-csv-plugins/releases/download/pinyin-v0.1.0/pinyin-0.1.0-macos-x86_64"
           ]
         },
         "linux-x86_64-gnu": {
           "file": "pinyin",
-          "size": 1464568,
-          "sha256": "4f6b3418350622340cce7121da7aa3608f6753d51497982957d6b27d2916293e",
+          "size": 1465448,
+          "sha256": "b3d133e23215920e27c97a4e963c9dc9bdf637cda34bbd0fb82be62d748e608f",
           "urls": [
             "https://github.com/tansen87/easy-csv-plugins/releases/download/pinyin-v0.1.0/pinyin-0.1.0-linux-x86_64-gnu"
           ]
         },
         "linux-aarch64-gnu": {
           "file": "pinyin",
-          "size": 1381152,
-          "sha256": "7e4b262cc448ed9a2cf3f05170b3c1069b972ccd84e7d643494352020d77e8c2",
+          "size": 1381160,
+          "sha256": "42e21c7d866adb73c371902040c0b72ee2ddc589f14fe54e7e9364c47b508127",
           "urls": [
             "https://github.com/tansen87/easy-csv-plugins/releases/download/pinyin-v0.1.0/pinyin-0.1.0-linux-aarch64-gnu"
           ]
