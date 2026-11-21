@@ -33,8 +33,11 @@ jobs:
           # which rejects it with "only supported on AArch64". Native runners are
           # free for public repositories.
           - { os: ubuntu-24.04-arm, platform: linux-aarch64-gnu, target: aarch64-unknown-linux-gnu }
-          - { os: macos-14, platform: macos-aarch64, target: aarch64-apple-darwin }
-          - { os: macos-14, platform: macos-x86_64, target: x86_64-apple-darwin }
+          # macos-14 runner label was retired by GitHub (runs started failing
+          # with "configuration 'macos-14-arm64-us-default' is not supported");
+          # macos-15 is the same arm64-only machine image family.
+          - { os: macos-15, platform: macos-aarch64, target: aarch64-apple-darwin }
+          - { os: macos-15, platform: macos-x86_64, target: x86_64-apple-darwin }
           - { os: windows-latest, platform: windows-x86_64, target: x86_64-pc-windows-msvc }
     steps:
       - uses: actions/checkout@v5
