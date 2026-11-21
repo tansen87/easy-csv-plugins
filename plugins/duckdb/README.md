@@ -18,14 +18,15 @@
   earlier universal build, so `macos-aarch64` and `macos-x86_64` point at
   different assets.
 - **2.0.0 moved from `.zip` to `.tar.gz`.** The workflows extract by extension,
-  so no step changes; only the asset names in `plugin.json` do.
-- The version tag carries a `v` prefix upstream (`v2.0.0`) while the catalog's
-  `version` does not (`2.0.0`) — the app compares semantically, but keep the
+  so no step changes; only the asset names in `plugin.json` do. 2.0.1 keeps the
+  same asset layout (and still offers a legacy `.zip` for Windows alongside).
+- The version tag carries a `v` prefix upstream (`v2.0.1`) while the catalog's
+  `version` does not (`2.0.1`) — the app compares semantically, but keep the
   convention so the UI reads naturally.
 
 ## Version output
 
-`duckdb -version` prints `v2.0.0 (Cyanoptera) d54cbbe3df`, not a bare version.
+`duckdb -version` prints `v2.0.1 (Cyanoptera) 8d78114e90`, not a bare version.
 The plugin line in Settings shows this raw string (the app only shells out for
 display); the catalog `version` is what update checks compare.
 
